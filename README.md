@@ -15,7 +15,18 @@
 | 镜像 | `ghcr.io/decohererk/decotv:latest` |
 | 实测环境 | 飞牛 fnOS `1.2.0800`，x86_64，Docker 28.5.2 |
 
-成品包：[`dist/DecoTV-1.5.0-fnos-x86.fpk`](dist/DecoTV-1.5.0-fnos-x86.fpk)（约 260 KB，镜像在安装时拉取）
+## 下载
+
+**[⬇ DecoTV-1.5.0-fnos-x86.fpk](https://github.com/liangpangzhi/decotv-fnos-fpk/releases/download/v1.5.0/DecoTV-1.5.0-fnos-x86.fpk)** · [Release 页面](https://github.com/liangpangzhi/decotv-fnos-fpk/releases/tag/v1.5.0) · [Actions 构建产物](https://github.com/liangpangzhi/decotv-fnos-fpk/actions)
+
+约 265 KB，不含镜像（安装时拉取）。
+
+```text
+大小:   271089 字节
+SHA256: e6e954752ad7852b1bfbf9326246db0d95cb6cfeb6f1a853c1a28ef50a7be974
+```
+
+仓库内同版本副本：[`dist/DecoTV-1.5.0-fnos-x86.fpk`](dist/DecoTV-1.5.0-fnos-x86.fpk)
 
 ---
 
