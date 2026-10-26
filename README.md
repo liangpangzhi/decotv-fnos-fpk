@@ -100,13 +100,13 @@ IMG_UPSTREAM = "ghcr.io/decohererk/decotv:latest"
 IMG_LOCAL = "decotv:" + VERSION      # 安装时把上游镜像重打成这个私有标签
 ```
 
-### CI（可选）
+### CI
 
-仓库根目录提供了 `.github/workflows/build.yml`：用 Linux 版 fnpack 构建并把 `DecoTV-<version>-fnos-x86.fpk` 作为 artifact 上传。
+`.github/workflows/build.yml` 会在 push 到 `main` 或手动触发时，用 Linux 版 fnpack 构建，并把 `DecoTV-<version>-fnos-x86.fpk` 作为 artifact 上传（Actions → 对应运行 → Artifacts）。
 
-> 注意：向 GitHub 推送 workflow 文件需要 token 带 `workflow` 权限，否则会被拒绝
-> （`refusing to allow a Personal Access Token to create or update workflow ... without workflow scope`）。
-> 本仓库首次推送时该文件未纳入版本库，需要时用带 `workflow` 权限的 token 单独提交即可。
+> 向 GitHub 推送 workflow 文件需要 token 带 `workflow` 权限；只有 `repo` 权限时会报
+> `refusing to allow a Personal Access Token to create or update workflow ... without workflow scope`。
+> 不方便用 CI 时，本地跑 `./build.sh` 结果完全一致。
 
 ---
 
