@@ -1,0 +1,85 @@
+#!/bin/bash
+
+FILE_PATH="${TRIM_APPDEST}/docker/docker-compose.yaml"
+ENV_FILE="${TRIM_APPDEST}/docker/.env"
+DEFAULT_NAME="decotv"
+
+# 让桌面入口与用户选择的端口保持一致。
+# 飞牛在安装早期就把入口写进应用中心数据库，安装脚本后置，
+# 因此每次启动时都按 .env 里的端口校正一次（幂等，失败不影响启动）。
+sync_shortcut_port() {
+    [ -f "$ENV_FILE" ] || return 0
+
+    PORT=$(sed -n 's/^DECOTV_PORT=//p' "$ENV_FILE" 2>/dev/null)
+    case "$PORT" in
+        ''|*[!0-9]*) return 0 ;;
+    esac
+
+    command -v psql >/dev/null 2>&1 || return 0
+
+    TMPDIR_SQL="${TRIM_PKGTMP:-/tmp}"
+    mkdir -p "$TMPDIR_SQL" 2>/dev/null
+    SQLFILE="$TMPDIR_SQL/fix_shortcut.sql"
+
+    cat > "$SQLFILE" <<SQL
+update app_service set url = 'http://\${host}:$PORT/'
+where id in (
+  select s.id from app_service s
+  join app_shortcut sc on sc.service_id = s.id
+  join app a on a.id = sc.app_id
+  where a.app_name = 'decotv'
+);
+SQL
+    STAMP="${TRIM_PKGVAR:-/tmp}/.shortcut_port"
+    if [ -f "$STAMP" ] && [ "$(cat "$STAMP" 2>/dev/null)" = "$PORT" ]; then
+        return 0
+    fi
+
+    chmod 644 "$SQLFILE" 2>/dev/null
+    su postgres -c "psql -d appcenter -q -f '$SQLFILE'" >/dev/null 2>&1
+    RC=$?
+    if [ "$RC" -eq 0 ]; then
+        printf '%s' "$PORT" > "$STAMP" 2>/dev/null
+    fi
+    rm -f "$SQLFILE"
+}
+
+is_docker_running () {
+    DOCKER_NAME=""
+
+    if [ -f "$FILE_PATH" ]; then
+        DOCKER_NAME=$(grep "container_name" "$FILE_PATH" | head -1 | awk -F ':' '{print $2}' | xargs)
+    fi
+
+    if [ -z "$DOCKER_NAME" ]; then
+        DOCKER_NAME="$DEFAULT_NAME"
+    fi
+
+    if docker inspect "$DOCKER_NAME" 2>/dev/null | grep -q '"Status": "running",'; then
+        return 0
+    fi
+    return 1
+}
+
+case "$1" in
+start)
+    # 容器由应用中心通过 docker compose 启动，这里只校正桌面入口端口
+    sync_shortcut_port
+    exit 0
+    ;;
+stop)
+    # 容器由应用中心通过 docker compose 停止
+    exit 0
+    ;;
+status)
+    sync_shortcut_port
+    if is_docker_running; then
+        exit 0
+    else
+        exit 3
+    fi
+    ;;
+*)
+    exit 1
+    ;;
+esac

@@ -1,0 +1,20 @@
+{
+  "docker-project": {
+    "projects": [
+      {
+        "name": "decotv",
+        "path": "docker"
+      }
+    ]
+  },
+  "data-share": {
+    "shares": [
+      {
+        "name": "decotv"
+      },
+      {
+        "name": "decotv/data"
+      }
+    ]
+  }
+}

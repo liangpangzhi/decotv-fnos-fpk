@@ -1,0 +1,11 @@
+本仓库是 [DecoTV](https://github.com/Decohererk/DecoTV) 的第三方打包工程（飞牛 fnOS fpk）。
+
+- **不包含** DecoTV 的源代码，也**不内嵌**其 Docker 镜像。安装时从上游镜像仓库
+  （`ghcr.io/decohererk/decotv` 或其公开镜像站）拉取镜像，版权归原作者所有。
+- 图标资源 `assets/icon.png` 取自 DecoTV 仓库的 `public/icons`，仅用于应用入口展示。
+- `dist/` 下的 fpk 只是本仓库脚本的构建产物，不含上述源码或镜像。
+- 本仓库的打包脚本与文档可自由使用与修改。
+
+DecoTV © [Decohererk](https://github.com/Decohererk/DecoTV)，请遵循其仓库的许可协议。
+
+飞牛 fnOS 与 fnpack 相关权利归飞牛（fnnas.com）所有。

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+### 卸载前执行：备份管理密码与端口，便于重装后沿用
+
+if [ -f "$TRIM_PKGETC/admin_port" ] && [ -f "$TRIM_PKGETC/admin_password" ]; then
+    exit 0
+fi
+
+if [ -f "$TRIM_APPDEST/docker/.env" ]; then
+    mkdir -p "$TRIM_PKGETC"
+    sed -n "s/^DECOTV_ADMIN_PASSWORD='\(.*\)'$/\1/p" "$TRIM_APPDEST/docker/.env" > "$TRIM_PKGETC/admin_password" 2>/dev/null
+    sed -n 's/^DECOTV_PORT=//p' "$TRIM_APPDEST/docker/.env" > "$TRIM_PKGETC/admin_port" 2>/dev/null
+fi
+
+exit 0

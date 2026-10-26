@@ -1,0 +1,54 @@
+#!/bin/bash
+
+### 升级后执行：沿用已有的管理密码与端口，并重写 compose
+
+if [ ! -f "$TRIM_PKGETC/admin_password" ]; then
+    exit 0
+fi
+
+PWD_VALUE=$(cat "$TRIM_PKGETC/admin_password")
+HOST_PORT=$(cat "$TRIM_PKGETC/admin_port" 2>/dev/null)
+case "$HOST_PORT" in
+    ''|*[!0-9]*) HOST_PORT="3000" ;;
+esac
+
+mkdir -p "$TRIM_APPDEST/docker"
+cat > "$TRIM_APPDEST/docker/docker-compose.yaml" <<EOF
+services:
+  decotv:
+    image: decotv:1.5.0
+    container_name: decotv
+    restart: unless-stopped
+    ports:
+      - "$HOST_PORT:3000"
+    environment:
+      TZ: Asia/Shanghai
+      PASSWORD: "$PWD_VALUE"
+      USERNAME: admin
+      NEXT_PUBLIC_STORAGE_TYPE: localstorage
+      FFMPEG_DOWNLOAD_DIR: /data/ffmpeg-downloads
+    volumes:
+      - /var/apps/decotv/shares/decotv/data:/data
+EOF
+
+if [ -d "$TRIM_APPDEST/ui" ]; then
+    cat > "$TRIM_APPDEST/ui/config" <<EOF
+{
+    ".url": {
+        "decotv.Application": {
+            "title": "DecoTV",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "$HOST_PORT",
+            "url": "/",
+            "allUsers": true
+        }
+    }
+}
+EOF
+fi
+
+docker image inspect "decotv:1.5.0" >/dev/null 2>&1 || docker tag "ghcr.nju.edu.cn/decohererk/decotv:latest" "decotv:1.5.0" 2>/dev/null
+
+exit 0

@@ -1,0 +1,14 @@
+appname               = decotv
+version               = 1.5.0
+display_name          = DecoTV
+desc                  = 影视聚合与播放 Web 应用（Next.js 16）：豆瓣榜单、TVBox / 自定义源搜索、弹幕、私有影库（OpenList / Emby / Jellyfin）与 FFmpeg 转存下载。安装后从飞牛桌面点击图标即可进入。
+platform              = x86
+source                = thirdparty
+maintainer            = WorkBuddy
+maintainer_url        = https://github.com/Decohererk/DecoTV
+distributor           = WorkBuddy
+service_port          = 3000
+checkport             = false
+ctl_stop              = true
+desktop_uidir         = ui
+desktop_applaunchname = decotv.Application

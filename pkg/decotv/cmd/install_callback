@@ -1,0 +1,72 @@
+#!/bin/bash
+
+### 安装文件后执行：记录配置、确保桌面入口端口正确、兜底准备镜像标签
+
+LOG="$TRIM_TEMP_LOGFILE"
+IMG_LOCAL="decotv:1.5.0"
+
+PWD_VALUE="${wizard_admin_password}"
+if [ -z "$PWD_VALUE" ]; then
+    PWD_VALUE="admin123"
+fi
+
+HOST_PORT="${wizard_port}"
+case "$HOST_PORT" in
+    ''|*[!0-9]*) HOST_PORT="3000" ;;
+esac
+if [ "$HOST_PORT" -lt 1 ] || [ "$HOST_PORT" -gt 65535 ]; then
+    HOST_PORT="3000"
+fi
+
+# 记录配置，供升级/卸载流程参考
+mkdir -p "$TRIM_APPDEST/docker" "$TRIM_PKGETC"
+{
+    printf "DECOTV_ADMIN_PASSWORD='%s'\n" "$PWD_VALUE"
+    printf "DECOTV_PORT=%s\n" "$HOST_PORT"
+} > "$TRIM_APPDEST/docker/.env"
+chmod 640 "$TRIM_APPDEST/docker/.env"
+printf "%s" "$HOST_PORT" > "$TRIM_PKGETC/admin_port"
+printf "%s" "$PWD_VALUE" > "$TRIM_PKGETC/admin_password"
+chmod 600 "$TRIM_PKGETC/admin_password"
+
+# 兜底：再次写入桌面入口端口
+if [ -d "$TRIM_APPDEST/ui" ]; then
+    cat > "$TRIM_APPDEST/ui/config" <<EOF
+{
+    ".url": {
+        "decotv.Application": {
+            "title": "DecoTV",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "$HOST_PORT",
+            "url": "/",
+            "allUsers": true
+        }
+    }
+}
+EOF
+fi
+
+# 桌面入口由应用中心在安装早期写入数据库，安装脚本后置，这里回写用户选择的端口。
+# 失败不影响安装（磁盘上的 ui/config 已是正确端口，可在应用设置里再调整）。
+if command -v psql >/dev/null 2>&1; then
+    SQLFILE="$TRIM_PKGTMP/fix_shortcut.sql"
+    mkdir -p "$TRIM_PKGTMP"
+    cat > "$SQLFILE" <<SQL
+update app_service set url = 'http://\${host}:$HOST_PORT/'
+where id in (
+  select s.id from app_service s
+  join app_shortcut sc on sc.service_id = s.id
+  join app a on a.id = sc.app_id
+  where a.app_name = 'decotv'
+);
+SQL
+    chmod 644 "$SQLFILE"
+    su postgres -c "psql -d appcenter -q -f '$SQLFILE'" >/dev/null 2>&1 || true
+    rm -f "$SQLFILE"
+fi
+
+docker image inspect "$IMG_LOCAL" >/dev/null 2>&1 || docker tag "ghcr.nju.edu.cn/decohererk/decotv:latest" "$IMG_LOCAL" 2>/dev/null
+
+exit 0

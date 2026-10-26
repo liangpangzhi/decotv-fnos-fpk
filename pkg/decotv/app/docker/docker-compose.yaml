@@ -1,0 +1,15 @@
+services:
+  decotv:
+    image: decotv:1.5.0
+    container_name: decotv
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: Asia/Shanghai
+      PASSWORD: "admin123"
+      USERNAME: admin
+      NEXT_PUBLIC_STORAGE_TYPE: localstorage
+      FFMPEG_DOWNLOAD_DIR: /data/ffmpeg-downloads
+    volumes:
+      - /var/apps/decotv/shares/decotv/data:/data
