@@ -243,6 +243,12 @@ ICON.PNG / ICON_256.PNG
 
 `app.tgz` 内的文件权限为 644、脚本 755，安装后会被复制到 `target/`。
 
+两个实测细节：
+
+- `fnpack` 会给 `manifest` 末尾追加一行 `checksum`（内容摘要），所以 manifest 的字节和源文件不完全一致，属正常
+- **Windows 版 fnpack 会用 CRLF 重写 manifest**，Linux 版是 LF；两者在 fnOS 上都能正常安装（都实测过），但如果你要逐字节比对产物，请在同一平台构建
+- 图标由 Pillow 生成，不同 Pillow 版本/平台的 PNG 编码结果可能有几 KB 差异，尺寸和内容一致即可
+
 ---
 
 ## 8. 安全扫描的一个小坑
