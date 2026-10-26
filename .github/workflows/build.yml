@@ -1,0 +1,35 @@
+name: build-fpk
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pillow
+
+      - name: Build fpk
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Verify package contents
+        run: |
+          ls -lh dist/
+          tar -tzf dist/*.fpk | head -20
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: decotv-fnos-fpk
+          path: dist/*.fpk
+          if-no-files-found: error
